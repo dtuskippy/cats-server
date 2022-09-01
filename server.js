@@ -27,8 +27,9 @@ db.once('open', function () {
 // implement express
 const app = express();
 
-// middleware
+// middleware -- app.use parses incoming object...
 app.use(cors());
+app.use(express.json());
 
 // define PORT validate env is working
 const PORT = process.env.PORT || 3002;
@@ -49,6 +50,35 @@ async function getCats(request, response, next) {
     next(error);
   }
 }
+
+app.post('/cats', postCat);
+
+async function postCat(request, response, next) {
+  console.log(request.body);
+  try {
+    const newCat = await Cat.create(request.body);
+    response.status(201).send(newCat);
+
+  } catch (error) {
+    next(error);
+  }
+
+}
+
+app.delete('/cats/:id', deleteCat);
+
+async function deleteCat(request, response, next) {
+  const id = request.params.id;
+  console.log(id);
+  try {
+    await Cat.findByIdAndDelete(id);
+    response.status(204).send('success!'); //you first assumed 'newCat' structure from POST and it did work, but that's why you got it back
+
+  } catch (error) {
+    next(error);
+  }
+}
+
 
 
 app.get('*', (request, response) => {
